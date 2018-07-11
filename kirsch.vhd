@@ -101,12 +101,12 @@ if (rising_edge(clk)) then
       o_col <= x_pos;
   end if;
 
-	else if(state = to_unsigned(1,2)) then
+	elsif(state = to_unsigned(1,2)) then
 	    mark <= to_unsigned(0, 3);	   
 	    state <= to_unsigned(2,2);
-	else if(state = to_unsigned(2,2)) then
+	elsif(state = to_unsigned(2,2)) then
 	    state <= to_unsigned(3,2);
-	else if(state = to_unsigned(3,2)) then
+	elsif(state = to_unsigned(3,2)) then
 	if(y_pos>= 2) then
 	    a <= b;
 	    b <= c;
@@ -207,9 +207,8 @@ if (rising_edge(clk)) then
 	    x_pos <= x_pos+1;
 	    state <= to_unsigned(0,2);
 	end if;
-        end if;
-        end if;
-        end if;
+     --   end if;
+--        end if;
 	end if;
     end if;
 end process;
