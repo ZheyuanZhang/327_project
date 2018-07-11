@@ -32,6 +32,7 @@ architecture main of kirsch is
     signal counter : unsigned(7 downto 0);
     signal state : unsigned(1 downto 0);
     signal a,b,c,d,e,f,g,h,i : integer range 0 to 255;
+    signal v : std_logic_vector(7 downto 0);
 begin
 
 mem0 : entity work.mem(main) 
@@ -63,41 +64,43 @@ port map(
 
 process(clk, reset)
 begin
-    if (rising_edge(clk)) then 
-        if(reset = '1') then 
-            counter <= to_unsigned(0, 8); 
-            x_pos <= to_unsigned(0, 8); 
-            y_pos <= to_unsigned(0, 8); 
-            mark <= to_unsigned(1, 3); 
-            o_mode <= "01"; 
-	    state <= to_unsigned(0,2);
-        else
-	if(o_mode = "01") then
-	    o_mode <= "10";
-	end if;
-        if(o_mode = "10") then 
-            counter <= to_unsigned(0, 8); 
-            x_pos <= to_unsigned(0, 8); 
-            y_pos <= to_unsigned(0, 8); 
-            mark <= to_unsigned(1, 3);
-	    state <= to_unsigned(0,2);
-        end if; 
+if (rising_edge(clk)) then 
+    if(reset = '1') then 
+        counter <= to_unsigned(0, 8); 
+        x_pos <= to_unsigned(0, 8); 
+        y_pos <= to_unsigned(0, 8); 
+        mark <= to_unsigned(1, 3); 
+        o_mode <= "01"; 
+        state <= to_unsigned(0,2);
+    else
+      if(o_mode = "01") then
+        o_mode <= "10";
+    end if;
+
+  if(o_mode = "10") then 
+      counter <= to_unsigned(0, 8); 
+      x_pos <= to_unsigned(0, 8); 
+      y_pos <= to_unsigned(0, 8); 
+      mark <= to_unsigned(1, 3);
+      state <= to_unsigned(0,2);
+  end if; 
     
-    	if(state = to_unsigned(0,2)) then
-	    o_valid <= '0';
-    	    if(i_valid = '1') then
-	        o_mode <= "11";
-	    	mem_i <= std_logic_vector(i_pixel);
-	        with current_mark select
-		    mark <= to_unsigned(1, 3) when to_unsigned(0, 2),
-		    to_unsigned(2, 3) when to_unsigned(1, 2), 
-		    to_unsigned(4, 3) when to_unsigned(2, 2), 
-		    to_unsigned(0, 3) when others;
-		state <= to_unsigned(1,2);
-		
-	        o_row <= y_pos;
-	        o_col <= x_pos;
-	    end if;
+  if(state = to_unsigned(0,2)) then
+    o_valid <= '0';
+      if(i_valid = '1') then
+        o_mode <= "11";
+  	    mem_i <= std_logic_vector(i_pixel);
+        with current_mark select
+          mark <= to_unsigned(1, 3) when to_unsigned(0, 2),
+                  to_unsigned(2, 3) when to_unsigned(1, 2), 
+                  to_unsigned(4, 3) when to_unsigned(2, 2), 
+                  to_unsigned(0, 3) when others;
+        state <= to_unsigned(1,2);
+  
+      o_row <= y_pos;
+      o_col <= x_pos;
+  end if;
+
 	else if(state = to_unsigned(1,2)) then
 	    mark <= to_unsigned(0, 3);	   
 	    state <= to_unsigned(2,2);
@@ -126,7 +129,7 @@ begin
 		to_integer(unsigned(mem_o1)) when to_unsigned(0, 2), 
 		to_integer(unsigned(mem_o2)) when to_unsigned(1, 2), 
 		0 when others;
-	    
+      
 	    if(x_pos >= 2) then
     ----------------------------------------------------
     		deriv_e  <= 5*(c + d + e) - 3*(a + b + f + g + h);
@@ -174,35 +177,34 @@ begin
     
     		if max_deriv > 383 then
       		  o_edge <= '1';
-		  o_dir <= edge_dir;
-		  o_valid <= '1';
+		        o_dir <= edge_dir;
+		        o_valid <= '1';
     		else
       		  o_edge <= '0'; 
-		  o_dir <= (others => '0');
-		  o_valid <= '1';
+            o_dir <= (others => '0');
+		        o_valid <= '1';
     		end if;
 	-------------------------------------------------
 	    else
-      	        o_edge <= '0';
-		o_dir <= (others => '0');
+         o_edge <= '0';
+		     o_dir <= (others => '0');
 	    end if;
 	    end if;
 	    
 	    if((y_pos = to_unsigned(255, 8)) AND (x_pos = to_unsigned(255, 8))) then
-		o_mode <= "10";
+		    o_mode <= "10";
 	    end if;
 	    
 	    if(x_pos = to_unsigned(255, 8)) then
-		y_pos <= y_pos+1;
+		      y_pos <= y_pos+1;
 	        with current_mark select
-		    current_mark <= to_unsigned(0, 2) when to_unsigned(2, 2),
-		    to_unsigned(1, 2) when to_unsigned(0, 2), 
-		    to_unsigned(2, 2) when to_unsigned(1, 2), 
-		    to_unsigned(0, 2) when others;
+		        current_mark <= to_unsigned(0, 2) when to_unsigned(2, 2),
+		                        to_unsigned(1, 2) when to_unsigned(0, 2), 
+		                        to_unsigned(2, 2) when to_unsigned(1, 2), 
+                            to_unsigned(0, 2) when others;
 	    end if;
 	    
 	    x_pos <= x_pos+1;
-	    
 	    state <= to_unsigned(0,2);
 	end if;
         end if;
